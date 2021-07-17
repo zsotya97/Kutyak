@@ -4,13 +4,9 @@ import datetime as dt
 
 #Metódus az adatok beolvasásához
 def Beolvasas(nev,osztaly):
-    lista = []
-    Beolvas = open(nev, "r", encoding="utf-8")
-    fejlec = Beolvas.readline()
-    for x in Beolvas:
-        lista.append(osztaly(x.strip()))
-    Beolvas.close()
-    return lista
+    with open(nev, "r", encoding="utf-8") as Beolvas:
+        fejlec = Beolvas.readline()
+        return [osztaly(x.strip()) for x in Beolvas]
 
 
 #Beolvasás feladatok
@@ -31,7 +27,7 @@ for x in kutyak:
        maxfid=x.fajta_id
 
 #6. feladat
-atlag = float(eletkor/len(kutyak))
+atlag = float(sum(x.eletkor for x in kutyak)/len(kutyak))
 print(f"6. feladat: Kutyák átlag életkora: %.2f" %atlag)
 
 #7 feladat:
@@ -44,20 +40,17 @@ for x in kutyafajtak:
 print(legidosebb)
 
 
+
 #8. feladat:
-fid=[]
 print("8. feladat: Január 10-én vizsgált kutyák száma: ")
-for x in kutyak:
-    if x.ellenorzes.month==1 and x.ellenorzes.day==10:
-        fid.append(x.fajta_id)
+fid= [x.fajta_id for x in kutyak if x.ellenorzes.month ==1 and x.ellenorzes.day==10]
+tizedike = {}
 for x in fid:
-    tizedike=0
-    neve=""
     for y in kutyafajtak:
         if y.id==x: 
-            tizedike+=1
             neve=y.nev
-    print(f"\t{neve}: {tizedike} kutya")
+            tizedike[neve]=tizedike.get(neve,0)+1
+[print(f"\t{neve}: {tiz} kutya") for neve, tiz in tizedike.items()]
 
 #9. feladat
 kivalogatas=[]
@@ -81,17 +74,15 @@ print(f"9. feladat: Legjobban leterhelt nap: {dt.datetime.strftime(maxdatum, '%Y
 #10. feladat
 print("10. feladat: névstatisztika.txt")
 statisztika=[]
-kiiras=  open("névstatisztika.csv","w", encoding="utf-8") 
-for x in kutyanevek:
-    szamlalas=0
-    for y in kutyak:
-        if x.id==y.nev_id:
-            szamlalas+=1
-    statisztika.append(Statisztika(x.kutya_nev,szamlalas))
-statisztika=sorted(statisztika, key=lambda x: x.szam, reverse=True)
-for x in statisztika:
-    kiiras.write(f"{x.nev}:{x.szam}\n")
-kiiras.close()
+with open("névstatisztika.csv","w", encoding="utf-8") as kiiras:
+    for x in kutyanevek:
+        szamlalas=0
+        for y in kutyak:
+            if x.id==y.nev_id:
+                szamlalas+=1
+        statisztika.append(Statisztika(x.kutya_nev,szamlalas))
+    statisztika=sorted(statisztika, key=lambda x: x.szam, reverse=True)
+    [kiiras.write(f"{x.nev}:{x.szam}\n") for x in statisztika]
         
 
             
